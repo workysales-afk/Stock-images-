@@ -22,15 +22,14 @@ function App() {
   const [searchTerm, setSearchTerm] = useState("nature");
   const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [page, setPage] = useState(1); // Page track karne ke liye
-  
+  const [page, setPage] = useState(1);
   const [selectedImg, setSelectedImg] = useState(null); 
   const [view, setView] = useState("home");
 
   const searchImages = useCallback(async (query = searchTerm, pageNum = 1) => {
     setLoading(true);
     setView("home");
-    window.scrollTo(0, 0); // Naye page par upar le jane ke liye
+    window.scrollTo(0, 0);
     try {
       const res = await fetch(
         `https://api.pexels.com/v1/search?query=${query}&per_page=40&page=${pageNum}`,
@@ -47,17 +46,17 @@ function App() {
   }, [searchTerm]);
 
   useEffect(() => {
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        setUser(user);
-        loadFavorites(user.uid);
+    onAuthStateChanged(auth, async (u) => {
+      if (u) {
+        setUser(u);
+        loadFavorites(u.uid);
       } else {
         setUser(null);
         setFavorites([]);
       }
     });
-    searchImages("nature", page);
-  }, [page, searchImages]);
+    searchImages(searchTerm, page);
+  }, [page, searchImages, searchTerm]);
 
   async function loadFavorites(uid) {
     try {
@@ -70,6 +69,14 @@ function App() {
   async function saveFavorites(uid, favs) {
     try { await setDoc(doc(db, "favorites", uid), { images: favs }); } catch (error) { console.error(error); }
   }
+
+  const toggleFavorite = (img) => {
+    if(!user) { alert("⚠️ Please login to save favorites"); return; }
+    const exists = favorites.find(fav => fav.id === img.id);
+    let newFavs = exists ? favorites.filter(fav => fav.id !== img.id) : [...favorites, img];
+    setFavorites(newFavs);
+    saveFavorites(user.uid, newFavs);
+  };
 
   const handleDownload = async (imageUrl, imageId) => {
     try {
@@ -96,7 +103,7 @@ function App() {
     <div className="app">
       <header className="header">
         <div className="logo-section">
-          <h1 onClick={() => setView("home")} style={{cursor:'pointer'}}>📸 FreeStockHub</h1>
+          <h1 onClick={() => {setView("home"); setPage(1)}} style={{cursor:'pointer'}}>📸 FreeStockHub</h1>
         </div>
         
         <nav className="nav-links">
@@ -145,7 +152,10 @@ function App() {
                     <div className="image-info">
                       <span className="photog-name">👤 {img.photographer}</span>
                       <div className="card-actions">
-                        <button onClick={() => toggleFavorite(img)} className={`fav-btn ${favorites.find(fav => fav.id === image.id) ? 'active' : ''}`}>
+                        <button 
+                          onClick={() => toggleFavorite(img)} 
+                          className={`fav-btn ${favorites.find(fav => fav.id === img.id) ? 'active' : ''}`}
+                        >
                           {favorites.find(fav => fav.id === img.id) ? "❤️" : "♡"}
                         </button>
                         <button onClick={() => handleDownload(img.src.original, img.id)} className="download-btn-small">📥</button>
@@ -165,7 +175,6 @@ function App() {
               </div>
             </div>
 
-            {/* --- PAGINATION CONTROLS --- */}
             <div className="pagination">
               <button disabled={page === 1} onClick={() => setPage(page - 1)} className="page-btn">Prev</button>
               <span className="page-indicator">Page {page}</span>
