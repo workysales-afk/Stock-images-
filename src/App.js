@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+  import React, { useState, useEffect, useCallback } from "react";
 import { auth, db } from "./firebase";
 import { signOut, onAuthStateChanged } from "firebase/auth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
@@ -9,13 +9,14 @@ const PEXELS_API_KEY = "AsAeHbkwF90qcWmKQnnnKC0VaAo43qobVoZSSbrlRinzRfDOTLjDoJMD
 function App() {
   const [user, setUser] = useState(null);
   const [images, setImages] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("nature");
+  const [searchTerm, setSearchTerm] = useState("Nature");
   const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [selectedImg, setSelectedImg] = useState(null); 
   const [view, setView] = useState("home");
 
+  // Load Favorites Logic
   const loadFavorites = useCallback(async (uid) => {
     try {
       const favDoc = doc(db, "favorites", uid);
@@ -24,116 +25,109 @@ function App() {
     } catch (error) { console.error("Error loading favorites:", error); }
   }, []);
 
+  // Fetch Images with Pagination
   const searchImages = useCallback(async (query = searchTerm, pageNum = 1) => {
     setLoading(true);
-    setView("home");
-    // Sirf naye search par upar scroll karein
-    if (pageNum === 1) window.scrollTo({ top: 450, behavior: 'smooth' });
-    
+    if (pageNum === 1) window.scrollTo({ top: 480, behavior: 'smooth' });
+    else window.scrollTo({ top: 400, behavior: 'smooth' });
+
     try {
       const res = await fetch(
-        `https://api.pexels.com/v1/search?query=${query}&per_page=40&page=${pageNum}`,
+        `https://api.pexels.com/v1/search?query=${query}&per_page=30&page=${pageNum}`,
         { headers: { Authorization: PEXELS_API_KEY } }
       );
       const data = await res.json();
       setImages(data.photos || []);
-    } catch (error) {
-      console.error("❌ Failed to load images.");
-    }
+    } catch (error) { console.error("❌ API Error"); }
     setLoading(false);
   }, [searchTerm]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (u) => {
-      if (u) {
-        setUser(u);
-        loadFavorites(u.uid);
-      } else {
-        setUser(null);
-        setFavorites([]);
-      }
+      if (u) { setUser(u); loadFavorites(u.uid); } 
+      else { setUser(null); setFavorites([]); }
     });
     searchImages(searchTerm, page);
     return () => unsubscribe();
   }, [page, searchImages, searchTerm, loadFavorites]);
 
-  async function saveFavorites(uid, favs) {
-    try { await setDoc(doc(db, "favorites", uid), { images: favs }); } 
-    catch (error) { console.error("Error saving favorites:", error); }
-  }
-
-  const toggleFavorite = (img) => {
-    if(!user) { alert("⚠️ Please login to save favorites"); return; }
+  const toggleFavorite = async (img) => {
+    if(!user) { alert("Please login to save favorites!"); return; }
     const exists = favorites.find(fav => fav.id === img.id);
     let newFavs = exists ? favorites.filter(fav => fav.id !== img.id) : [...favorites, img];
     setFavorites(newFavs);
-    saveFavorites(user.uid, newFavs);
+    await setDoc(doc(db, "favorites", user.uid), { images: newFavs });
   };
 
-  const handleDownload = async (imageUrl, imageId) => {
-    try {
-      const response = await fetch(imageUrl);
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `FreeStockHub-${imageId}.jpg`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } catch (error) {
-      window.open(imageUrl, "_blank");
-    }
+  const handleDownload = async (url, id) => {
+    const res = await fetch(url);
+    const blob = await res.blob();
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `FreeStockHub-${id}.jpg`;
+    link.click();
   };
 
-  const handleNewSearch = (e) => {
-    if (e) e.preventDefault();
+  const onSearchSubmit = (e) => {
+    e.preventDefault();
     setPage(1);
     searchImages(searchTerm, 1);
   };
 
   return (
     <div className="app">
-      {/* PEXELS STYLE NAVBAR */}
+      {/* --- PREMIUM NAVBAR --- */}
       <nav className="navbar">
-        <div className="logo" onClick={() => {setView("home"); setPage(1)}}>
-          FreeStockHub
-        </div>
-        <div className="nav-right">
-          <span onClick={() => {setView("home"); setPage(1)}} className={view === "home" ? "active" : ""}>Explore</span>
-          <span onClick={() => setView("about")} className={view === "about" ? "active" : ""}>About</span>
-          {user ? (
-            <div className="user-area">
-              <span className="user-name">👋 {user.email.split('@')[0]}</span>
-              <button onClick={() => signOut(auth)} className="btn-logout-minimal">Logout</button>
-            </div>
-          ) : (
-            <button className="btn-join">Join Now</button>
-          )}
+        <div className="nav-container">
+          <div className="logo" onClick={() => {setView("home"); setPage(1)}}>
+            FreeStockHub
+          </div>
+          <div className="nav-links">
+            <span onClick={() => setView("home")} className={view === "home" ? "active" : ""}>Explore</span>
+            <span onClick={() => setView("about")} className={view === "about" ? "active" : ""}>License</span>
+            {user ? (
+              <div className="user-profile">
+                <img src={`https://ui-avatars.com/api/?name=${user.email}&background=random`} alt="avatar" className="avatar"/>
+                <button onClick={() => signOut(auth)} className="btn-logout">Logout</button>
+              </div>
+            ) : (
+              <button className="btn-join">Join</button>
+            )}
+          </div>
         </div>
       </nav>
 
       {view === "home" ? (
         <>
-          {/* PEXELS STYLE HERO SECTION */}
-          <section className="hero-section">
-            <div className="hero-content">
-              <h1>The best free stock photos shared by creators.</h1>
-              <form className="hero-search-box" onSubmit={handleNewSearch}>
+          {/* --- HERO SECTION --- */}
+          <header className="hero">
+            <div className="hero-inner">
+              <h1>The best free stock photos shared by talented creators.</h1>
+              <form className="hero-search" onSubmit={onSearchSubmit}>
+                <button type="submit" className="search-icon-btn">🔍</button>
                 <input 
                   type="text" 
-                  placeholder="Search for free photos..." 
+                  placeholder="Search for free photos" 
                   value={searchTerm} 
                   onChange={e => setSearchTerm(e.target.value)} 
                 />
-                <button type="submit">🔍</button>
               </form>
-              <p className="trending-tags">Trending: nature, wallpaper, city, sky</p>
+              <div className="trending">
+                <span>Trending:</span>
+                <p onClick={() => {setSearchTerm("Sky"); setPage(1)}}>sky,</p>
+                <p onClick={() => {setSearchTerm("Forest"); setPage(1)}}>forest,</p>
+                <p onClick={() => {setSearchTerm("Technology"); setPage(1)}}>tech</p>
+              </div>
             </div>
-          </section>
+          </header>
 
-          <div className="main-layout">
-            <div className="gallery-wrapper">
+          <main className="main-layout">
+            <div className="gallery-section">
+              <div className="section-header">
+                <h2>Free Stock Photos</h2>
+                <div className="filter-dropdown">Popular ↓</div>
+              </div>
+
               {/* MASONRY GRID */}
               <div className="masonry-grid">
                 {images.map(img => (
@@ -142,17 +136,18 @@ function App() {
                       src={img.src.large} 
                       alt={img.alt} 
                       onClick={() => setSelectedImg(img.src.large2x)}
+                      loading="lazy"
                     />
-                    <div className="card-overlay">
-                      <div className="photog-info">👤 {img.photographer}</div>
-                      <div className="card-actions">
-                        <button 
-                          onClick={() => toggleFavorite(img)} 
-                          className={`icon-btn ${favorites.find(fav => fav.id === img.id) ? 'active' : ''}`}
-                        >
-                          {favorites.find(fav => fav.id === img.id) ? "❤️" : "🤍"}
+                    <div className="card-hover">
+                      <div className="photographer">
+                        <div className="p-avatar">{img.photographer[0]}</div>
+                        <span>{img.photographer}</span>
+                      </div>
+                      <div className="actions">
+                        <button onClick={() => toggleFavorite(img)} className="act-btn">
+                          {favorites.find(f => f.id === img.id) ? "❤️" : "🤍"}
                         </button>
-                        <button onClick={() => handleDownload(img.src.original, img.id)} className="icon-btn">📥</button>
+                        <button onClick={() => handleDownload(img.src.original, img.id)} className="act-btn">📥</button>
                       </div>
                     </div>
                   </div>
@@ -160,43 +155,46 @@ function App() {
               </div>
 
               {/* PAGINATION */}
-              <div className="pagination-minimal">
-                <button disabled={page === 1} onClick={() => setPage(page - 1)}>Prev</button>
-                <span>Page {page}</span>
-                <button onClick={() => setPage(page + 1)}>Next</button>
+              <div className="pagination">
+                <button disabled={page === 1} onClick={() => setPage(page - 1)} className="pg-btn">Previous</button>
+                <div className="pg-numbers">
+                  <span className="active-pg">{page}</span>
+                  <span onClick={() => setPage(page + 1)}>{page + 1}</span>
+                  <span onClick={() => setPage(page + 2)}>{page + 2}</span>
+                </div>
+                <button onClick={() => setPage(page + 1)} className="pg-btn">Next Page</button>
               </div>
             </div>
 
-            {/* SIDEBAR - FAVORITES */}
-            <aside className="sidebar-favorites">
-              <h3>❤️ Favorites ({favorites.length})</h3>
-              <div className="fav-mini-grid">
-                {favorites.map(fav => (
-                  <img 
-                    key={fav.id} 
-                    src={fav.src.tiny} 
-                    alt="Fav" 
-                    onClick={() => setSelectedImg(fav.src.large)} 
-                  />
-                ))}
+            {/* SIDEBAR */}
+            <aside className="sidebar">
+              <div className="sidebar-sticky">
+                <h3>❤️ Collected ({favorites.length})</h3>
+                <div className="fav-scroll">
+                  {favorites.length > 0 ? favorites.map(fav => (
+                    <div key={fav.id} className="fav-item" onClick={() => setSelectedImg(fav.src.large)}>
+                      <img src={fav.src.tiny} alt="fav" />
+                    </div>
+                  )) : <p className="empty-msg">No favorites yet</p>}
+                </div>
               </div>
             </aside>
-          </div>
+          </main>
         </>
       ) : (
-        <div className="about-full-page">
-          <h2>About FreeStockHub</h2>
-          <p>We provide high-quality, royalty-free stock images for everyone.</p>
-          <button onClick={() => setView("home")} className="btn-back">Start Exploring</button>
+        <div className="license-view">
+          <h2>License</h2>
+          <p>All photos on FreeStockHub can be used for free. We use Pexels API for all content.</p>
+          <button onClick={() => setView("home")} className="btn-back">Explore Photos</button>
         </div>
       )}
 
       {/* LIGHTBOX */}
       {selectedImg && (
-        <div className="lightbox-full" onClick={() => setSelectedImg(null)}>
-          <div className="lightbox-wrap">
-            <span className="close-lb">&times;</span>
-            <img src={selectedImg} alt="Zoomed" />
+        <div className="lightbox-overlay" onClick={() => setSelectedImg(null)}>
+          <div className="lightbox-container">
+            <img src={selectedImg} alt="fullsize" />
+            <button className="close-lightbox">✕</button>
           </div>
         </div>
       )}
@@ -205,4 +203,4 @@ function App() {
 }
 
 export default App;
-      
+              
