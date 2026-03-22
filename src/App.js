@@ -1,4 +1,4 @@
-  import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { auth, db } from "./firebase";
 import { signOut, onAuthStateChanged } from "firebase/auth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
@@ -11,12 +11,10 @@ function App() {
   const [images, setImages] = useState([]);
   const [searchTerm, setSearchTerm] = useState("Nature");
   const [favorites, setFavorites] = useState([]);
-  const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [selectedImg, setSelectedImg] = useState(null); 
   const [view, setView] = useState("home");
 
-  // Load Favorites Logic
   const loadFavorites = useCallback(async (uid) => {
     try {
       const favDoc = doc(db, "favorites", uid);
@@ -25,9 +23,7 @@ function App() {
     } catch (error) { console.error("Error loading favorites:", error); }
   }, []);
 
-  // Fetch Images with Pagination
   const searchImages = useCallback(async (query = searchTerm, pageNum = 1) => {
-    setLoading(true);
     if (pageNum === 1) window.scrollTo({ top: 480, behavior: 'smooth' });
     else window.scrollTo({ top: 400, behavior: 'smooth' });
 
@@ -39,7 +35,6 @@ function App() {
       const data = await res.json();
       setImages(data.photos || []);
     } catch (error) { console.error("❌ API Error"); }
-    setLoading(false);
   }, [searchTerm]);
 
   useEffect(() => {
@@ -76,7 +71,6 @@ function App() {
 
   return (
     <div className="app">
-      {/* --- PREMIUM NAVBAR --- */}
       <nav className="navbar">
         <div className="nav-container">
           <div className="logo" onClick={() => {setView("home"); setPage(1)}}>
@@ -99,7 +93,6 @@ function App() {
 
       {view === "home" ? (
         <>
-          {/* --- HERO SECTION --- */}
           <header className="hero">
             <div className="hero-inner">
               <h1>The best free stock photos shared by talented creators.</h1>
@@ -128,7 +121,6 @@ function App() {
                 <div className="filter-dropdown">Popular ↓</div>
               </div>
 
-              {/* MASONRY GRID */}
               <div className="masonry-grid">
                 {images.map(img => (
                   <div key={img.id} className="pexels-card">
@@ -154,7 +146,6 @@ function App() {
                 ))}
               </div>
 
-              {/* PAGINATION */}
               <div className="pagination">
                 <button disabled={page === 1} onClick={() => setPage(page - 1)} className="pg-btn">Previous</button>
                 <div className="pg-numbers">
@@ -166,7 +157,6 @@ function App() {
               </div>
             </div>
 
-            {/* SIDEBAR */}
             <aside className="sidebar">
               <div className="sidebar-sticky">
                 <h3>❤️ Collected ({favorites.length})</h3>
@@ -189,7 +179,6 @@ function App() {
         </div>
       )}
 
-      {/* LIGHTBOX */}
       {selectedImg && (
         <div className="lightbox-overlay" onClick={() => setSelectedImg(null)}>
           <div className="lightbox-container">
@@ -203,4 +192,4 @@ function App() {
 }
 
 export default App;
-              
+                    
