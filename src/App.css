@@ -16,7 +16,7 @@ body {
   padding: 20px;
 }
 
-/* --- Header & Mobile Menu Fix --- */
+/* --- Navigation & Header --- */
 .header {
   background: white;
   padding: 15px 25px;
@@ -26,7 +26,7 @@ body {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 30px;
-  flex-wrap: wrap; /* Buttons niche aa jayenge agar jagah kam hogi */
+  flex-wrap: wrap;
   gap: 15px;
 }
 
@@ -35,26 +35,27 @@ body {
   font-size: 1.8rem;
 }
 
+.nav-links {
+  display: flex;
+  gap: 20px;
+}
+
+.nav-links span {
+  cursor: pointer;
+  font-weight: bold;
+  color: #667eea;
+  padding-bottom: 2px;
+  transition: 0.3s;
+}
+
+.nav-links span.active {
+  border-bottom: 2px solid #667eea;
+}
+
 .user-info-bar {
   display: flex;
   align-items: center;
   gap: 12px;
-  flex-wrap: wrap;
-}
-
-.user-email {
-  font-weight: 500;
-  color: #444;
-  font-size: 0.9rem;
-}
-
-.guest-badge {
-  background: #f1f3f9;
-  padding: 8px 15px;
-  border-radius: 20px;
-  font-size: 0.9rem;
-  color: #667eea;
-  font-weight: bold;
 }
 
 .btn-logout {
@@ -65,28 +66,68 @@ body {
   border-radius: 20px;
   cursor: pointer;
   font-weight: bold;
-  font-size: 0.8rem;
 }
 
-/* --- Auth Form --- */
-.auth-container {
+/* --- About Section Styling --- */
+.about-container {
   background: white;
-  padding: 30px;
+  padding: 40px;
   border-radius: 20px;
   box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-  max-width: 450px;
-  margin: 0 auto 30px auto;
   text-align: center;
+  max-width: 800px;
+  margin: 0 auto;
 }
 
-.auth-form {
+.about-container h2 {
+  color: #667eea;
+  margin-bottom: 20px;
+}
+
+.about-container p {
+  line-height: 1.6;
+  color: #444;
+  margin-bottom: 15px;
+}
+
+/* --- Lightbox / Photo Zoom --- */
+.lightbox-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.9);
   display: flex;
-  flex-direction: column;
-  gap: 15px;
-  margin-top: 20px;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  cursor: pointer;
 }
 
-/* --- Search Section --- */
+.lightbox-content {
+  position: relative;
+  max-width: 90%;
+  max-height: 90%;
+}
+
+.zoom-img {
+  max-width: 100%;
+  max-height: 85vh;
+  border-radius: 10px;
+  box-shadow: 0 0 30px rgba(255,255,255,0.1);
+}
+
+.close-btn {
+  position: absolute;
+  top: -40px;
+  right: 0;
+  color: white;
+  font-size: 40px;
+  cursor: pointer;
+}
+
+/* --- Search & Grid --- */
 .search-section {
   display: flex;
   gap: 10px;
@@ -94,7 +135,6 @@ body {
   background: white;
   padding: 15px;
   border-radius: 15px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
 }
 
 .search-input {
@@ -116,7 +156,6 @@ body {
   cursor: pointer;
 }
 
-/* --- Image Cards & Grid --- */
 .content-grid {
   display: grid;
   grid-template-columns: 1fr 280px;
@@ -137,12 +176,11 @@ body {
   transition: 0.3s;
 }
 
-.image-card:hover { transform: translateY(-5px); }
-
 .image {
   width: 100%;
   height: 220px;
   object-fit: cover;
+  cursor: zoom-in;
 }
 
 .image-info {
@@ -152,21 +190,6 @@ body {
   align-items: center;
 }
 
-.photog-name {
-  font-size: 0.8rem;
-  color: #555;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 120px;
-}
-
-.card-actions {
-  display: flex;
-  gap: 10px;
-}
-
-/* --- Download Button Style --- */
 .download-btn-small {
   background: #2ecc71;
   color: white;
@@ -179,10 +202,7 @@ body {
   align-items: center;
   justify-content: center;
   font-size: 18px;
-  transition: 0.2s;
 }
-
-.download-btn-small:hover { background: #27ae60; transform: scale(1.1); }
 
 .fav-btn {
   background: none;
@@ -198,7 +218,6 @@ body {
   background: white;
   padding: 20px;
   border-radius: 15px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
   height: fit-content;
 }
 
@@ -206,7 +225,6 @@ body {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 10px;
-  margin-top: 15px;
 }
 
 .fav-thumbnail {
@@ -214,30 +232,16 @@ body {
   height: 80px;
   object-fit: cover;
   border-radius: 8px;
-}
-
-/* --- AdSense Placeholders --- */
-.adsense-banner, .adsense-sidebar {
-  background: #f8f9fa;
-  border: 2px dashed #cbd5e0;
-  padding: 15px;
-  text-align: center;
-  border-radius: 10px;
-  margin: 20px 0;
-  color: #a0aec0;
-  font-size: 0.8rem;
+  cursor: pointer;
 }
 
 /* --- Responsive --- */
 @media (max-width: 900px) {
   .content-grid { grid-template-columns: 1fr; }
-  .header h1 { font-size: 1.5rem; }
+  .header { justify-content: center; }
 }
 
 @media (max-width: 600px) {
   .search-section { flex-direction: column; }
-  .btn-search { padding: 12px; }
-  .images-grid { grid-template-columns: 1fr; }
-  }
-
-  
+  .nav-links { order: 3; width: 100%; justify-content: center; }
+}
