@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { auth, db } from "./firebase";
 import { 
-  signInWithEmailAndPassword, 
   signOut, 
   onAuthStateChanged 
 } from "firebase/auth";
@@ -16,8 +15,6 @@ const PEXELS_API_KEY = "AsAeHbkwF90qcWmKQnnnKC0VaAo43qobVoZSSbrlRinzRfDOTLjDoJMD
 
 function App() {
   const [user, setUser] = useState(null);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [images, setImages] = useState([]);
   const [searchTerm, setSearchTerm] = useState("nature");
   const [favorites, setFavorites] = useState([]);
@@ -25,6 +22,14 @@ function App() {
   const [page, setPage] = useState(1);
   const [selectedImg, setSelectedImg] = useState(null); 
   const [view, setView] = useState("home");
+
+  const loadFavorites = useCallback(async (uid) => {
+    try {
+      const favDoc = doc(db, "favorites", uid);
+      const favSnap = await getDoc(favDoc);
+      if (favSnap.exists()) setFavorites(favSnap.data().images || []);
+    } catch (error) { console.error("Error loading favorites:", error); }
+  }, []);
 
   const searchImages = useCallback(async (query = searchTerm, pageNum = 1) => {
     setLoading(true);
@@ -46,7 +51,7 @@ function App() {
   }, [searchTerm]);
 
   useEffect(() => {
-    onAuthStateChanged(auth, async (u) => {
+    const unsubscribe = onAuthStateChanged(auth, async (u) => {
       if (u) {
         setUser(u);
         loadFavorites(u.uid);
@@ -56,18 +61,12 @@ function App() {
       }
     });
     searchImages(searchTerm, page);
-  }, [page, searchImages, searchTerm]);
-
-  async function loadFavorites(uid) {
-    try {
-      const favDoc = doc(db, "favorites", uid);
-      const favSnap = await getDoc(favDoc);
-      if (favSnap.exists()) setFavorites(favSnap.data().images || []);
-    } catch (error) { console.error(error); }
-  }
+    return () => unsubscribe();
+  }, [page, searchImages, searchTerm, loadFavorites]);
 
   async function saveFavorites(uid, favs) {
-    try { await setDoc(doc(db, "favorites", uid), { images: favs }); } catch (error) { console.error(error); }
+    try { await setDoc(doc(db, "favorites", uid), { images: favs }); } 
+    catch (error) { console.error("Error saving favorites:", error); }
   }
 
   const toggleFavorite = (img) => {
@@ -118,7 +117,7 @@ function App() {
               <button onClick={() => {signOut(auth); setView("home")}} className="btn-logout">Logout</button>
             </div>
           ) : (
-            <span className="guest-badge">👤 Guest</span>
+            <span className="guest-badge">👤 Guest Mode</span>
           )}
         </div>
       </header>
@@ -184,8 +183,8 @@ function App() {
         ) : (
           <div className="about-container">
             <h2>About FreeStockHub</h2>
-            <p>Welcome to <strong>FreeStockHub</strong>, your go-to destination for high-quality images.</p>
-            <button onClick={() => setView("home")} className="btn-primary">Start Exploring</button>
+            <p>Welcome to <strong>FreeStockHub</strong>, your go-to destination for high-quality, royalty-free images. Powered by Pexels API.</p>
+            <button onClick={() => setView("home")} className="btn-search">Start Exploring</button>
           </div>
         )}
       </div>
@@ -203,4 +202,4 @@ function App() {
 }
 
 export default App;
-  
+                                   
