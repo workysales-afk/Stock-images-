@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from "react";
 import { auth, db } from "./firebase";
 import { 
   signInWithEmailAndPassword, 
-  createUserWithEmailAndPassword, 
   signOut, 
   onAuthStateChanged 
 } from "firebase/auth";
