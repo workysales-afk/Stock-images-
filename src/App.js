@@ -24,6 +24,7 @@ function App() {
   }, []);
 
   const searchImages = useCallback(async (query = searchTerm, pageNum = 1) => {
+    // Scroll handling
     if (pageNum === 1) window.scrollTo({ top: 480, behavior: 'smooth' });
     else window.scrollTo({ top: 400, behavior: 'smooth' });
 
@@ -55,18 +56,27 @@ function App() {
   };
 
   const handleDownload = async (url, id) => {
-    const res = await fetch(url);
-    const blob = await res.blob();
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = `FreeStockHub-${id}.jpg`;
-    link.click();
+    try {
+      const res = await fetch(url);
+      const blob = await res.blob();
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `FreeStockHub-${id}.jpg`;
+      link.click();
+    } catch (err) { window.open(url, "_blank"); }
   };
 
   const onSearchSubmit = (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     setPage(1);
     searchImages(searchTerm, 1);
+  };
+
+  // Trending clicks ke liye helper
+  const handleTrendingClick = (tag) => {
+    setSearchTerm(tag);
+    setPage(1);
+    searchImages(tag, 1);
   };
 
   return (
@@ -107,9 +117,9 @@ function App() {
               </form>
               <div className="trending">
                 <span>Trending:</span>
-                <p onClick={() => {setSearchTerm("Sky"); setPage(1)}}>sky,</p>
-                <p onClick={() => {setSearchTerm("Forest"); setPage(1)}}>forest,</p>
-                <p onClick={() => {setSearchTerm("Technology"); setPage(1)}}>tech</p>
+                <p onClick={() => handleTrendingClick("Sky")}>sky,</p>
+                <p onClick={() => handleTrendingClick("Forest")}>forest,</p>
+                <p onClick={() => handleTrendingClick("Technology")}>tech</p>
               </div>
             </div>
           </header>
@@ -123,11 +133,10 @@ function App() {
 
               <div className="masonry-grid">
                 {images.map(img => (
-                  <div key={img.id} className="pexels-card">
+                  <div key={img.id} className="pexels-card" onClick={() => setSelectedImg(img.src.large2x)}>
                     <img 
                       src={img.src.large} 
                       alt={img.alt} 
-                      onClick={() => setSelectedImg(img.src.large2x)}
                       loading="lazy"
                     />
                     <div className="card-hover">
@@ -135,7 +144,8 @@ function App() {
                         <div className="p-avatar">{img.photographer[0]}</div>
                         <span>{img.photographer}</span>
                       </div>
-                      <div className="actions">
+                      <div className="actions" onClick={(e) => e.stopPropagation()}> 
+                        {/* stopPropagation yahan zaroori hai taaki buttons click karne par zoom modal na khule */}
                         <button onClick={() => toggleFavorite(img)} className="act-btn">
                           {favorites.find(f => f.id === img.id) ? "❤️" : "🤍"}
                         </button>
@@ -150,8 +160,8 @@ function App() {
                 <button disabled={page === 1} onClick={() => setPage(page - 1)} className="pg-btn">Previous</button>
                 <div className="pg-numbers">
                   <span className="active-pg">{page}</span>
-                  <span onClick={() => setPage(page + 1)}>{page + 1}</span>
-                  <span onClick={() => setPage(page + 2)}>{page + 2}</span>
+                  <span onClick={() => setPage(page + 1)} className="pg-num">{page + 1}</span>
+                  <span onClick={() => setPage(page + 2)} className="pg-num">{page + 2}</span>
                 </div>
                 <button onClick={() => setPage(page + 1)} className="pg-btn">Next Page</button>
               </div>
@@ -181,9 +191,9 @@ function App() {
 
       {selectedImg && (
         <div className="lightbox-overlay" onClick={() => setSelectedImg(null)}>
-          <div className="lightbox-container">
+          <div className="lightbox-container" onClick={(e) => e.stopPropagation()}>
             <img src={selectedImg} alt="fullsize" />
-            <button className="close-lightbox">✕</button>
+            <button className="close-lightbox" onClick={() => setSelectedImg(null)}>✕</button>
           </div>
         </div>
       )}
