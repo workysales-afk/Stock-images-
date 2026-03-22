@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { auth, db } from "./firebase";
 import { 
   signInWithEmailAndPassword, 
@@ -11,9 +11,9 @@ import {
   setDoc,
   getDoc
 } from "firebase/firestore";
-import "./App.css"; // We'll create this next
+import "./App.css";
 
-const PEXELS_API_KEY = "AsAeHbkwF90qcWmKQnnnKC0VaAo43qobVoZSSbrlRinzRfDOTLjDoJMD" // Get from https://www.pexels.com/api/
+const PEXELS_API_KEY = "AsAeHbkwF90qcWmKQnnnKC0VaAo43qobVoZSSbrlRinzRfDOTLjDoJMD";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -23,6 +23,26 @@ function App() {
   const [searchTerm, setSearchTerm] = useState("nature");
   const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  // Search function ko bahar nikala taaki useEffect mein use ho sake
+  const searchImages = useCallback(async (query = searchTerm) => {
+    setLoading(true);
+    try {
+      const res = await fetch(
+        `https://api.pexels.com/v1/search?query=${query}&per_page=20`,
+        {
+          headers: {
+            Authorization: PEXELS_API_KEY
+          }
+        }
+      );
+      const data = await res.json();
+      setImages(data.photos || []);
+    } catch (error) {
+      console.error("❌ Failed to load images.");
+    }
+    setLoading(false);
+  }, [searchTerm]);
 
   useEffect(() => {
     onAuthStateChanged(auth, async (user) => {
@@ -34,7 +54,9 @@ function App() {
         setFavorites([]);
       }
     });
-  }, []);
+    // Website khulne par default images load hongi
+    searchImages("nature");
+  }, [searchImages]);
 
   async function loadFavorites(uid) {
     try {
@@ -55,6 +77,23 @@ function App() {
       console.error("Error saving favorites:", error);
     }
   }
+
+  // --- Naya Download Function ---
+  const handleDownload = async (imageUrl, imageId) => {
+    try {
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `FreeStockHub-${imageId}.jpg`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      alert("❌ Download failed!");
+    }
+  };
 
   const login = async () => {
     setLoading(true);
@@ -82,26 +121,6 @@ function App() {
     await signOut(auth);
   };
 
-  const searchImages = async () => {
-    setLoading(true);
-    setImages([]);
-    try {
-      const res = await fetch(
-        `https://api.pexels.com/v1/search?query=${searchTerm}&per_page=20`,
-        {
-          headers: {
-            Authorization: PEXELS_API_KEY
-          }
-        }
-      );
-      const data = await res.json();
-      setImages(data.photos || []);
-    } catch (error) {
-      alert("❌ Failed to load images. Check your Pexels API key.");
-    }
-    setLoading(false);
-  };
-
   const toggleFavorite = (image) => {
     if(!user) {
       alert("⚠️ Please login to save favorites");
@@ -124,115 +143,92 @@ function App() {
         <h1>📸 FreeStockHub</h1>
         <div className="user-section">
           {user ? (
-            <>
-              <span>👋 {user.email}</span>
+            <div className="user-info-bar">
+              <span className="user-email">👋 {user.email}</span>
               <button onClick={logout} className="btn-logout">Logout</button>
-            </>
+            </div>
           ) : (
-            <>
-              <span>👤 Guest</span>
-            </>
+            <span className="guest-badge">👤 Guest</span>
           )}
         </div>
       </header>
 
-      {!user ? (
-        <div className="auth-container">
-          <h2>🔐 Login / Register</h2>
-          <div className="auth-form">
-            <input 
-              type="email" 
-              placeholder="Email" 
-              value={email} 
-              onChange={e => setEmail(e.target.value)} 
-              className="input-field"
-            />
-            <input 
-              type="password" 
-              placeholder="Password" 
-              value={password} 
-              onChange={e => setPassword(e.target.value)} 
-              className="input-field"
-            />
-            <div className="auth-buttons">
-              <button onClick={login} disabled={loading} className="btn-primary">
-                {loading ? "Loading..." : "Login"}
-              </button>
-              <button onClick={register} disabled={loading} className="btn-secondary">
-                {loading ? "Loading..." : "Register"}
-              </button>
+      <div className="main-content">
+        <div className="search-section">
+          <input 
+            type="text" 
+            placeholder="Search images (nature, city, food...)" 
+            value={searchTerm} 
+            onChange={e => setSearchTerm(e.target.value)} 
+            className="search-input"
+          />
+          <button onClick={() => searchImages()} disabled={loading} className="btn-search">
+            {loading ? "🔍..." : "🔍 Search"}
+          </button>
+        </div>
+
+        {/* Auth Section for Guests */}
+        {!user && (
+          <div className="auth-container">
+            <h2>🔐 Login / Register to Save Favorites</h2>
+            <div className="auth-form">
+              <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} className="input-field" />
+              <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} className="input-field" />
+              <div className="auth-buttons">
+                <button onClick={login} className="btn-primary">Login</button>
+                <button onClick={register} className="btn-secondary">Register</button>
+              </div>
             </div>
           </div>
+        )}
+
+        {/* AdSense Banner */}
+        <div className="adsense-banner">
+          🚩 **Google AdSense Banner (728x90)**
         </div>
-      ) : (
-        <div className="main-content">
-          <div className="search-section">
-            <input 
-              type="text" 
-              placeholder="Search images (nature, city, food...)" 
-              value={searchTerm} 
-              onChange={e => setSearchTerm(e.target.value)} 
-              className="search-input"
-            />
-            <button onClick={searchImages} disabled={loading} className="btn-search">
-              {loading ? "🔍 Searching..." : "🔍 Search"}
-            </button>
-          </div>
 
-          {/* AdSense Banner */}
-          <div className="adsense-banner">
-            🚩 **Google AdSense Banner (728x90) - Replace with your ad code**
-          </div>
-
-          <div className="content-grid">
-            <div className="images-grid">
-              {images.length > 0 ? (
-                images.map(img => (
-                  <div key={img.id} className="image-card">
-                    <img 
-                      src={img.src.medium} 
-                      alt={img.alt} 
-                      className="image"
-                    />
-                    <div className="image-info">
-                      <span>📸 {img.photographer}</span>
-                      <button 
-                        onClick={() => toggleFavorite(img)} 
-                        className={`fav-btn ${favorites.find(fav => fav.id === img.id) ? 'active' : ''}`}
-                      >
+        <div className="content-grid">
+          <div className="images-grid">
+            {images.length > 0 ? (
+              images.map(img => (
+                <div key={img.id} className="image-card">
+                  <img src={img.src.medium} alt={img.alt} className="image" />
+                  <div className="image-info">
+                    <span className="photog-name">📸 {img.photographer}</span>
+                    <div className="card-actions">
+                      <button onClick={() => toggleFavorite(img)} className={`fav-btn ${favorites.find(fav => fav.id === img.id) ? 'active' : ''}`}>
                         {favorites.find(fav => fav.id === img.id) ? "❤️" : "♡"}
+                      </button>
+                      {/* --- Naya Download Button --- */}
+                      <button onClick={() => handleDownload(img.src.original, img.id)} className="download-btn-small">
+                        📥
                       </button>
                     </div>
                   </div>
-                ))
-              ) : (
-                <p>🔍 Search for images above to get started!</p>
-              )}
-            </div>
-
-            {/* Favorites Sidebar */}
-            <div className="sidebar">
-              <h3>❤️ My Favorites ({favorites.length})</h3>
-              {favorites.slice(0, 4).map(fav => (
-                <img 
-                  key={fav.id} 
-                  src={fav.src.tiny} 
-                  alt="Favorite" 
-                  className="fav-thumbnail"
-                />
-              ))}
-              {favorites.length > 4 && <p>+{favorites.length - 4} more</p>}
-            </div>
+                </div>
+              ))
+            ) : (
+              <p>Loading amazing images...</p>
+            )}
           </div>
 
-          {/* AdSense Sidebar */}
-          <div className="adsense-sidebar">
-            🚩 **Google AdSense Sidebar (300x250) - Replace with your ad code**
+          <div className="sidebar">
+            <h3>❤️ Favorites ({favorites.length})</h3>
+            <div className="fav-list">
+              {favorites.slice(0, 6).map(fav => (
+                <img key={fav.id} src={fav.src.tiny} alt="Fav" className="fav-thumbnail" />
+              ))}
+            </div>
           </div>
         </div>
-      )}
+
+        <div className="adsense-sidebar">
+          🚩 **Google AdSense Sidebar (300x250)**
+        </div>
+      </div>
     </div>
   );
 }
 
 export default App;
+    
