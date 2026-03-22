@@ -13,7 +13,7 @@ import {
 } from "firebase/firestore";
 import "./App.css"; // We'll create this next
 
-const PEXELS_API_KEY = AsAeHbkwF90qcWmKQnnnKC0VaAo43qobVoZSSbrlRinzRfDOTLjDoJMD // Get from https://www.pexels.com/api/
+const PEXELS_API_KEY = "AsAeHbkwF90qcWmKQnnnKC0VaAo43qobVoZSSbrlRinzRfDOTLjDoJMD" // Get from https://www.pexels.com/api/
 
 function App() {
   const [user, setUser] = useState(null);
