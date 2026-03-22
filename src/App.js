@@ -32,7 +32,7 @@ function App() {
     setView("home"); // Search karne par Gallery page par le jayega
     try {
       const res = await fetch(
-        `https://api.pexels.com/v1/search?query=${query}&per_page=20`,
+        `https://api.pexels.com/v1/search?query=${query}&per_page=100`,
         {
           headers: { Authorization: PEXELS_API_KEY }
         }
