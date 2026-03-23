@@ -24,10 +24,6 @@ function App() {
   }, []);
 
   const searchImages = useCallback(async (query = searchTerm, pageNum = 1) => {
-    // Scroll handling
-    if (pageNum === 1) window.scrollTo({ top: 480, behavior: 'smooth' });
-    else window.scrollTo({ top: 400, behavior: 'smooth' });
-
     try {
       const res = await fetch(
         `https://api.pexels.com/v1/search?query=${query}&per_page=30&page=${pageNum}`,
@@ -72,20 +68,11 @@ function App() {
     searchImages(searchTerm, 1);
   };
 
-  // Trending clicks ke liye helper
-  const handleTrendingClick = (tag) => {
-    setSearchTerm(tag);
-    setPage(1);
-    searchImages(tag, 1);
-  };
-
   return (
     <div className="app">
       <nav className="navbar">
         <div className="nav-container">
-          <div className="logo" onClick={() => {setView("home"); setPage(1)}}>
-            FreeStockHub
-          </div>
+          <div className="logo" onClick={() => {setView("home"); setPage(1)}}>FreeStockHub</div>
           <div className="nav-links">
             <span onClick={() => setView("home")} className={view === "home" ? "active" : ""}>Explore</span>
             <span onClick={() => setView("about")} className={view === "about" ? "active" : ""}>License</span>
@@ -117,35 +104,23 @@ function App() {
               </form>
               <div className="trending">
                 <span>Trending:</span>
-                <p onClick={() => handleTrendingClick("Sky")}>sky,</p>
-                <p onClick={() => handleTrendingClick("Forest")}>forest,</p>
-                <p onClick={() => handleTrendingClick("Technology")}>tech</p>
+                <p onClick={() => {setSearchTerm("Sky"); setPage(1)}}>sky, </p>
+                <p onClick={() => {setSearchTerm("Forest"); setPage(1)}}>forest, </p>
+                <p onClick={() => {setSearchTerm("Tech"); setPage(1)}}>tech</p>
               </div>
             </div>
           </header>
 
           <main className="main-layout">
             <div className="gallery-section">
-              <div className="section-header">
-                <h2>Free Stock Photos</h2>
-                <div className="filter-dropdown">Popular ↓</div>
-              </div>
-
+              <div className="section-header"><h2>Free Stock Photos</h2></div>
               <div className="masonry-grid">
                 {images.map(img => (
                   <div key={img.id} className="pexels-card" onClick={() => setSelectedImg(img.src.large2x)}>
-                    <img 
-                      src={img.src.large} 
-                      alt={img.alt} 
-                      loading="lazy"
-                    />
+                    <img src={img.src.large} alt={img.alt} loading="lazy" />
                     <div className="card-hover">
-                      <div className="photographer">
-                        <div className="p-avatar">{img.photographer[0]}</div>
-                        <span>{img.photographer}</span>
-                      </div>
-                      <div className="actions" onClick={(e) => e.stopPropagation()}> 
-                        {/* stopPropagation yahan zaroori hai taaki buttons click karne par zoom modal na khule */}
+                      <div className="photographer"><span>{img.photographer}</span></div>
+                      <div className="actions" onClick={(e) => e.stopPropagation()}>
                         <button onClick={() => toggleFavorite(img)} className="act-btn">
                           {favorites.find(f => f.id === img.id) ? "❤️" : "🤍"}
                         </button>
@@ -158,25 +133,19 @@ function App() {
 
               <div className="pagination">
                 <button disabled={page === 1} onClick={() => setPage(page - 1)} className="pg-btn">Previous</button>
-                <div className="pg-numbers">
-                  <span className="active-pg">{page}</span>
-                  <span onClick={() => setPage(page + 1)} className="pg-num">{page + 1}</span>
-                  <span onClick={() => setPage(page + 2)} className="pg-num">{page + 2}</span>
-                </div>
+                <div className="pg-numbers"><span className="active-pg">{page}</span></div>
                 <button onClick={() => setPage(page + 1)} className="pg-btn">Next Page</button>
               </div>
             </div>
 
             <aside className="sidebar">
-              <div className="sidebar-sticky">
-                <h3>❤️ Collected ({favorites.length})</h3>
-                <div className="fav-scroll">
-                  {favorites.length > 0 ? favorites.map(fav => (
-                    <div key={fav.id} className="fav-item" onClick={() => setSelectedImg(fav.src.large)}>
-                      <img src={fav.src.tiny} alt="fav" />
-                    </div>
-                  )) : <p className="empty-msg">No favorites yet</p>}
-                </div>
+              <h3>❤️ Collected ({favorites.length})</h3>
+              <div className="fav-scroll">
+                {favorites.map(fav => (
+                  <div key={fav.id} className="fav-item" onClick={() => setSelectedImg(fav.src.large)}>
+                    <img src={fav.src.tiny} alt="fav" />
+                  </div>
+                ))}
               </div>
             </aside>
           </main>
@@ -184,8 +153,8 @@ function App() {
       ) : (
         <div className="license-view">
           <h2>License</h2>
-          <p>All photos on FreeStockHub can be used for free. We use Pexels API for all content.</p>
-          <button onClick={() => setView("home")} className="btn-back">Explore Photos</button>
+          <p>All photos are free to use. Powered by Pexels.</p>
+          <button onClick={() => setView("home")} className="btn-back">Explore</button>
         </div>
       )}
 
@@ -202,4 +171,4 @@ function App() {
 }
 
 export default App;
-                    
+        
