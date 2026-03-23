@@ -11,198 +11,185 @@ body {
   font-family: 'Plus Jakarta Sans', sans-serif;
   background: #ffffff;
   color: #2c343e;
-  overflow-x: hidden;
 }
 
-/* --- Navbar Fix --- */
+/* --- Navbar Fix (Explore/License ek line mein) --- */
 .navbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 20px;
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  padding: 10px 15px !important;
   background: white;
   position: sticky;
   top: 0;
   z-index: 1000;
-  box-shadow: 0 1px 0 rgba(0,0,0,0.05);
+  box-shadow: 0 1px 5px rgba(0,0,0,0.1);
 }
 
 .logo {
   font-weight: 800;
-  font-size: 1.3rem;
+  font-size: 1.2rem;
   color: #05a081;
-  letter-spacing: -0.5px;
 }
 
 .nav-links {
-  display: flex;
-  gap: 15px;
+  display: flex !important;
+  flex-direction: row !important;
+  gap: 15px !important;
 }
 
 .nav-links span {
   font-weight: 600;
+  font-size: 0.85rem;
   cursor: pointer;
-  font-size: 0.9rem;
-  color: #5e6d77;
 }
 
-.nav-links span.active {
-  color: #05a081;
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-/* --- Hero Section (Pexels Look) --- */
+.avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+}
+
+/* --- Hero Section Fix --- */
 .hero {
   background: #05a081;
   color: white;
-  padding: 50px 20px;
+  padding: 40px 20px;
   text-align: center;
 }
 
 .hero h1 {
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin-bottom: 25px;
+  font-size: 1.4rem;
+  margin-bottom: 20px;
   line-height: 1.2;
 }
 
 .hero-search {
   background: white;
-  border-radius: 8px;
+  border-radius: 6px;
   display: flex;
-  max-width: 600px;
+  max-width: 500px;
   margin: 0 auto;
-  padding: 4px 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  padding: 2px 10px;
 }
 
 .hero-search input {
   flex: 1;
-  padding: 12px;
+  padding: 10px;
   border: none;
   outline: none;
-  font-size: 1rem;
 }
 
 .trending {
-  margin-top: 15px;
+  margin-top: 10px;
+  font-size: 0.75rem;
   display: flex;
   justify-content: center;
-  gap: 8px;
-  font-size: 0.8rem;
-  opacity: 0.9;
+  gap: 5px;
 }
 
-.trending p { cursor: pointer; text-decoration: underline; }
-
-/* --- Masonry Grid (2 Column Mobile) --- */
+/* --- Image Grid (Pexels Mobile Style) --- */
 .main-layout {
-  padding: 15px;
+  padding: 15px 10px;
 }
 
 .masonry-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr); /* Mobile: 2 items side by side */
-  gap: 10px;
+  display: grid !important;
+  grid-template-columns: repeat(2, 1fr) !important; /* 2 Columns */
+  gap: 10px !important;
 }
 
 .pexels-card {
   position: relative;
   border-radius: 4px;
   overflow: hidden;
+  background: #f0f0f0;
+  height: 220px; /* Fixed height taaki stretch na ho */
   cursor: pointer;
-  background: #f3f3f3;
-  aspect-ratio: 1 / 1.4; /* Sab images ek hi height ki dikhengi, bikhregi nahi */
 }
 
 .pexels-card img {
   width: 100%;
   height: 100%;
-  object-fit: cover; /* Image stretch nahi hogi, crop hogi */
+  object-fit: cover !important; /* Image ko stretch hone se rokega */
   display: block;
 }
 
-/* --- Clicking Fix (Pointer Events) --- */
+/* --- Hover/Actions --- */
 .card-hover {
   position: absolute;
   bottom: 0;
   width: 100%;
-  padding: 10px;
-  background: linear-gradient(transparent, rgba(0,0,0,0.7));
+  padding: 8px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.6));
   color: white;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  pointer-events: none; /* Isse image click block nahi hogi */
+  pointer-events: none; /* Clicks image par jayenge */
 }
 
 .actions {
   display: flex;
-  gap: 8px;
+  gap: 5px;
   pointer-events: auto; /* Buttons click honge */
 }
 
 .act-btn {
-  background: rgba(255,255,255,0.9);
+  background: white;
   border: none;
-  padding: 6px;
+  padding: 4px;
   border-radius: 4px;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-}
-
-/* --- Sidebar Mobile --- */
-.sidebar {
-  padding: 15px;
-  background: #f9fafb;
-  margin-top: 20px;
-  border-top: 1px solid #eee;
-}
-
-.fav-scroll {
-  display: flex;
-  gap: 10px;
-  overflow-x: auto;
-  padding: 10px 0;
-}
-
-/* --- Lightbox / Modal --- */
-.lightbox-overlay {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: rgba(0,0,0,0.9);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 2000;
-}
-
-.lightbox-container img {
-  max-width: 95vw;
-  max-height: 80vh;
-  border-radius: 8px;
 }
 
 /* --- Pagination --- */
 .pagination {
   display: flex;
   justify-content: center;
+  align-items: center;
   gap: 10px;
-  margin: 30px 0;
+  padding: 20px 0;
 }
 
 .pg-btn {
-  padding: 8px 16px;
+  padding: 5px 12px;
   border: 1px solid #ddd;
   background: white;
   border-radius: 4px;
-  font-weight: 600;
+  font-size: 0.8rem;
 }
 
-/* Desktop Grid Upgrade */
-@media (min-width: 900px) {
-  .masonry-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-  }
+.active-pg {
+  background: #05a081;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 4px;
+}
+
+/* --- Sidebar Mobile --- */
+.sidebar {
+  padding: 15px;
+  background: #fdfdfd;
+  margin-top: 20px;
+}
+
+.fav-scroll {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+}
+
+.fav-item img {
+  width: 100px;
+  height: 70px;
+  object-fit: cover;
+  border-radius: 4px;
+}
